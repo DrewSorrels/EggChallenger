@@ -1,4 +1,4 @@
-package com.openxc.enabler;
+package mhacks4.eggchallenger;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -6,17 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.openxc.VehicleManager;
-import com.openxc.enabler.preferences.PreferenceManagerService;
-import com.openxc.interfaces.bluetooth.BluetoothVehicleInterface;
+import mhacks4.eggchallenger.MainEgg;
+
 
 public class BluetoothReceiver extends BroadcastReceiver {
     private final static String TAG = BluetoothReceiver.class.getSimpleName();
 
     private final boolean isVehicleInterface(BluetoothDevice device) {
-        return device != null && device.getName() != null &&
-                device.getName().contains(
-                    BluetoothVehicleInterface.DEVICE_NAME_PREFIX);
+        return device != null;
     }
 
     @Override
@@ -26,12 +23,9 @@ public class BluetoothReceiver extends BroadcastReceiver {
         if(isVehicleInterface(bluetoothDevice)) {
             if(intent.getAction().compareTo(
                         BluetoothDevice.ACTION_ACL_CONNECTED) == 0){
-                Log.d(TAG, "A Bluetooth OpenXC VI connected: " + bluetoothDevice.getName());
-                context.startService(new Intent(context, VehicleManager.class));
-                context.startService(new Intent(context,
-                            PreferenceManagerService.class));
+                context.startService(new Intent(context, MainEgg.class));
             } else {
-                Log.d(TAG, "A Bluetooth OpenXC VI disconnected: " + bluetoothDevice.getName());
+                // Intentionally does nothing
             }
         }
     }

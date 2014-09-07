@@ -2,14 +2,28 @@ package mhacks4.eggchallenger;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.openxc.measurements.AmbientTemp;
+import com.openxc.measurements.EngCoolTemp;
+import com.openxc.measurements.Measurement;
+
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 
 public class MainEgg extends Activity {
+    private double insideTemp;
+    private double engineTemp;
+    private final static String TAG = "VehicleManager";
+    private Lock mRemoteBoundLock = new ReentrantLock();
+    private Condition mRemoteBoundCondition = mRemoteBoundLock.newCondition();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,6 +32,7 @@ public class MainEgg extends Activity {
 
         double time;
         time = calcTime();
+
 
 
     }
@@ -51,9 +66,24 @@ public class MainEgg extends Activity {
         double specificHeat = 3.18;
 
         // Read temperature inside.
-        double insideTemp = 1;
+
+        AmbientTemp.Listener mAmbientTemp =
+                new AmbientTemp.Listener() {
+                    public void receive(Measurement measurement) {
+                        final AmbientTemp atemp = (AmbientTemp) measurement;
+                        insideTemp = Double.parseDouble(atemp.toString());
+                    }
+                };
         // Read temperature of engine block
-        double engineTemp = 1;
+        EngCoolTemp.Listener mEngCoolTemp =
+                new EngCoolTemp.Listener() {
+                    public void receive(Measurement measurement) {
+                         EngCoolTemp cooltemp =
+                                (EngCoolTemp) measurement;
+                        engineTemp = Double.parseDouble(cooltemp.toString());
+                    }
+                };
+
         // Calculate delta t to be difference in temp of 144 and insideTemp
         double dt = t1 - insideTemp;
 
@@ -77,27 +107,4 @@ public class MainEgg extends Activity {
         // http://www.answers.com/Q/The_Density_of_an_egg
         // http://www.howmuchisin.com/produce_converters/volume-of-an-egg
     }
-
-    private double toCelsius(double f){
-        return (5.0/9.0) * (f - 32);
-    }
-
-    public void addVehicleInterface(
-            Class<? extends VehicleInterface> vehicleInterfaceType,
-            String resource) {
-        Log.i(TAG, "Adding interface: " + vehicleInterfaceType);
-
-        if(mRemoteService != null) {
-            try {
-                mRemoteService.addVehicleInterface(
-                        vehicleInterfaceType.getName(), resource);
-            } catch(RemoteException e) {
-                Log.w(TAG, "Unable to add vehicle interface", e);
-            }
-        } else {
-            Log.w(TAG, "Can't add vehicle interface, not connected to the " +
-                    "VehicleService");
-        }
-    }
-
 }
