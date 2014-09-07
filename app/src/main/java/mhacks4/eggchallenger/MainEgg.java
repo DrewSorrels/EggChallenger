@@ -2,28 +2,17 @@ package mhacks4.eggchallenger;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.os.RemoteException;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 import com.openxc.measurements.AmbientTemp;
 import com.openxc.measurements.EngCoolTemp;
 import com.openxc.measurements.Measurement;
 
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-
 public class MainEgg extends Activity {
     private double insideTemp;
     private double engineTemp;
     private final static String TAG = "VehicleManager";
-    private Lock mRemoteBoundLock = new ReentrantLock();
-    private Condition mRemoteBoundCondition = mRemoteBoundLock.newCondition();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,10 +22,7 @@ public class MainEgg extends Activity {
         double time;
         time = calcTime();
 
-
-
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -68,21 +54,21 @@ public class MainEgg extends Activity {
         // Read temperature inside.
 
         AmbientTemp.Listener mAmbientTemp =
-                new AmbientTemp.Listener() {
-                    public void receive(Measurement measurement) {
-                        final AmbientTemp atemp = (AmbientTemp) measurement;
-                        insideTemp = Double.parseDouble(atemp.toString());
-                    }
-                };
+            new AmbientTemp.Listener() {
+                public void receive(Measurement measurement) {
+                    final AmbientTemp atemp = (AmbientTemp) measurement;
+                    insideTemp = Double.parseDouble(atemp.toString());
+                }
+            };
         // Read temperature of engine block
         EngCoolTemp.Listener mEngCoolTemp =
-                new EngCoolTemp.Listener() {
-                    public void receive(Measurement measurement) {
-                         EngCoolTemp cooltemp =
-                                (EngCoolTemp) measurement;
-                        engineTemp = Double.parseDouble(cooltemp.toString());
-                    }
-                };
+            new EngCoolTemp.Listener() {
+                public void receive(Measurement measurement) {
+                     EngCoolTemp cooltemp =
+                            (EngCoolTemp) measurement;
+                    engineTemp = Double.parseDouble(cooltemp.toString());
+                }
+            };
 
         // Calculate delta t to be difference in temp of 144 and insideTemp
         double dt = t1 - insideTemp;
